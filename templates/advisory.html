@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Get Advisory{% endblock %}
+{% block body_class %}app-page{% endblock %}
+{% block content %}
+{% include "partials/navbar.html" %}
+<main class="app-main">
+  <div class="page-header"><h1>🌾 Get Farm Advisory</h1><p>Enter your farm details — 7 AI agents will analyse and generate your personalised report</p></div>
+  <form id="advisoryForm" enctype="multipart/form-data" class="advisory-form">
+    <div class="form-group"><h3>📍 Location & Farm Details</h3>
+      <div class="form-grid">
+        <div class="field"><label>Location</label><input type="text" name="location" value="{{ user.district or 'Mysuru' }}, {{ user.state or 'Karnataka' }}" required/></div>
+        <div class="field"><label>State</label><input type="text" name="state" value="{{ user.state or 'Karnataka' }}"/></div>
+        <div class="field"><label>Land Area (Hectares)</label><input type="number" name="area" value="{{ user.land_area or 2 }}" step="0.5" min="0.1"/></div>
+        <div class="field"><label>Primary Concern</label><select name="primary_concern"><option value="crop selection">Crop Selection</option><option value="disease control">Disease Control</option><option value="soil improvement">Soil Improvement</option><option value="market advisory">Market Advisory</option><option value="government schemes">Government Schemes</option></select></div>
+        <div class="field"><label>Report Language</label><select name="language"><option value="english">English</option><option value="kannada">ಕನ್ನಡ (Kannada)</option><option value="tamil">தமிழ் (Tamil)</option><option value="hindi">हिन्दी (Hindi)</option><option value="telugu">తెలుగు (Telugu)</option></select></div>
+      </div>
+    </div>
+    <div class="form-group"><h3>🧪 Soil Parameters</h3>
+      <div class="form-grid">
+        <div class="field"><label>Nitrogen (N) kg/ha: <strong id="nVal">80</strong></label><input type="range" name="nitrogen" min="0" max="140" value="80" oninput="document.getElementById('nVal').textContent=this.value"/></div>
+        <div class="field"><label>Phosphorus (P) kg/ha: <strong id="pVal">40</strong></label><input type="range" name="phosphorus" min="0" max="145" value="40" oninput="document.getElementById('pVal').textContent=this.value"/></div>
+        <div class="field"><label>Potassium (K) kg/ha: <strong id="kVal">60</strong></label><input type="range" name="potassium" min="0" max="205" value="60" oninput="document.getElementById('kVal').textContent=this.value"/></div>
+        <div class="field"><label>pH: <strong id="phVal">6.5</strong></label><input type="range" name="ph" min="3" max="10" step="0.1" value="6.5" oninput="document.getElementById('phVal').textContent=this.value"/></div>
+        <div class="field"><label>Temperature (°C)</label><input type="number" name="temperature" value="26" min="5" max="50"/></div>
+        <div class="field"><label>Humidity (%)</label><input type="number" name="humidity" value="70" min="0" max="100"/></div>
+        <div class="field"><label>Rainfall (mm)</label><input type="number" name="rainfall" value="150" min="0" max="3000"/></div>
+        <div class="field"><label>Soil Type</label><select name="soil_type">
+          {% for st in ['loamy','clayey','sandy','black','red','silty','laterite'] %}
+          <option value="{{ st }}" {% if user.soil_type==st %}selected{% endif %}>{{ st.capitalize() }}</option>
+          {% endfor %}</select></div>
+      </div>
+    </div>
+    <div class="form-group"><h3>📷 Leaf Image (optional — for disease detection)</h3>
+      <div class="field" style="max-width:340px;margin-bottom:12px"><label>Which plant is this leaf from?</label>
+        <select name="leaf_crop">
+          <option value="">Auto-detect</option><option value="tomato">Tomato</option><option value="potato">Potato</option>
+          <option value="maize">Maize / Corn</option><option value="apple">Apple</option><option value="grape">Grape</option>
+          <option value="pepper">Pepper</option><option value="rice">Rice</option>
+        </select></div>
+      <div class="upload-area" onclick="document.getElementById('imgInput').click()">
+        <input type="file" id="imgInput" name="image" accept="image/*" style="display:none"/>
+        <div id="uploadPH" class="upload-placeholder"><span style="font-size:2rem">📷</span><br/>Click to upload leaf image<br/><small>JPG, PNG — max 16MB</small></div>
+        <img id="imgPreview" src="" alt="" style="display:none;max-height:180px;border-radius:10px;margin:0 auto"/>
+      </div>
+    </div>
+    <button type="submit" class="auth-btn btn-large" id="submitBtn">🚀 Generate Full Advisory Report</button>
+  </form>
+  <div id="loading" style="display:none;text-align:center;padding:40px 20px">
+    <div class="spinner" style="margin:0 auto 16px"></div>
+    <p id="loadingText" style="color:var(--leaf);font-weight:700;margin-bottom:16px">Initialising agents…</p>
+    <div class="agent-progress" id="agentProgress"></div>
+  </div>
+  <div id="result" style="display:none;margin-top:32px"></div>
+  <button class="pdf-fab" id="pdfFab" onclick="downloadPDF()" style="display:none">📄 Download PDF</button>
+</main>
+<script src="/static/js/main.js"></script>
+{% endblock %}

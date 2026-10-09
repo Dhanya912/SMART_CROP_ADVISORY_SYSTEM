@@ -1,0 +1,45 @@
+<nav class="app-nav">
+  <a href="/dashboard" class="nav-brand">🌾 CropAI</a>
+  <div class="nav-links">
+    <a href="/dashboard" class="nav-link {% if request.path=='/dashboard' %}active{% endif %}">🏠 Dashboard</a>
+    <a href="/advisory"  class="nav-link {% if request.path=='/advisory'  %}active{% endif %}">🌾 Get Advisory</a>
+    <a href="/farmer" class="nav-link {% if request.path=='/farmer' %}active{% endif %}">📱 Leaf Scan</a>
+    <a href="/history"   class="nav-link {% if request.path=='/history'   %}active{% endif %}">📋 History</a>
+    <a href="/profile"   class="nav-link {% if request.path=='/profile'   %}active{% endif %}">👤 Profile</a>
+  </div>
+  <div class="nav-user">
+    <span class="nav-uname">{{ user.name }}</span>
+    <a href="/logout" class="nav-logout">Logout</a>
+  </div>
+</nav>
+
+<!-- ============ CHATBOT WIDGET ============ -->
+<button id="chatToggleBtn" class="chat-toggle-btn" aria-label="Open chat assistant">
+  <span id="chatToggleIcon">💬</span>
+  <span class="chat-toggle-dot"></span>
+</button>
+<div class="chat-window hidden" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-header-title">
+      <span class="chat-bot-icon">🤖</span>
+      <div>
+        <div class="chat-header-name">Advisory Assistant</div>
+        <div class="chat-header-status"><span class="status-dot"></span> Online</div>
+      </div>
+    </div>
+    <div class="chat-header-actions">
+      <select id="chatLangSelect">
+        <option value="en">EN</option><option value="kn">ಕನ್ನಡ</option><option value="ta">தமிழ்</option>
+        <option value="hi">हिन्दी</option><option value="te">తెలుగు</option>
+      </select>
+      <button id="chatCloseBtn" aria-label="Close chat">✕</button>
+    </div>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-chips" id="chatChips"></div>
+  <form class="chat-input-row" id="chatForm">
+    <input type="text" id="chatInput" placeholder="Ask about crops, weather, prices..." autocomplete="off">
+    <button type="submit" aria-label="Send">➤</button>
+  </form>
+</div>
+<script src="/static/js/chatbot.js"></script>

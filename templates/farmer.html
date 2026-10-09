@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Leaf Scan{% endblock %}
+{% block content %}
+{% include "partials/navbar.html" %}
+
+<div class="farmer-wrap">
+
+  <div class="farmer-card" style="text-align:center">
+    <h1 style="margin:0 0 4px;font-size:1.4rem;color:#2d6a4f">🌿 Leaf Scan</h1>
+    <p style="margin:0;color:#666;font-size:.92rem">Take a photo of the leaf, get the disease result, download your report.</p>
+  </div>
+
+  <form id="farmerForm" enctype="multipart/form-data">
+    <div class="farmer-card">
+      <label class="farmer-drop" id="drop" for="fImg">
+        <div id="dropText"><div style="font-size:2.6rem">📷</div>
+          <strong>Tap to take / choose a leaf photo</strong><br/><small>JPG or PNG</small></div>
+        <img id="fPreview" src="" alt="" style="display:none"/>
+      </label>
+      <input type="file" id="fImg" name="image" accept="image/*" capture="environment" style="display:none"/>
+    </div>
+
+    <div class="farmer-card">
+      <div style="margin-bottom:12px">
+        <label style="font-weight:700;color:#2d6a4f">Plant</label>
+        <select name="leaf_crop" id="fCrop" style="width:100%;padding:12px;border-radius:12px;border:1px solid #cfd8cf;font-size:1rem">
+          <option value="">Auto-detect</option><option value="tomato">Tomato</option><option value="potato">Potato</option>
+          <option value="maize">Maize / Corn</option><option value="apple">Apple</option><option value="grape">Grape</option>
+          <option value="pepper">Pepper</option><option value="rice">Rice</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight:700;color:#2d6a4f">Report language</label>
+        <select name="language" id="fLang" style="width:100%;padding:12px;border-radius:12px;border:1px solid #cfd8cf;font-size:1rem">
+          <option value="kannada" selected>ಕನ್ನಡ (Kannada)</option>
+          <option value="english">English</option>
+          <option value="tamil">தமிழ் (Tamil)</option>
+          <option value="hindi">हिन्दी (Hindi)</option>
+          <option value="telugu">తెలుగు (Telugu)</option>
+        </select>
+      </div>
+    </div>
+
+    <input type="hidden" name="location" value="{{ user.district or 'Mysuru' }}, {{ user.state or 'Karnataka' }}"/>
+    <input type="hidden" name="state" value="{{ user.state or 'Karnataka' }}"/>
+    <input type="hidden" name="area" value="{{ user.land_area or 1 }}"/>
+    <input type="hidden" name="primary_concern" value="disease control"/>
+    <input type="hidden" name="soil_type" value="{{ user.soil_type or 'loamy' }}"/>
+    <input type="hidden" name="nitrogen" value="80"/><input type="hidden" name="phosphorus" value="40"/>
+    <input type="hidden" name="potassium" value="60"/><input type="hidden" name="ph" value="6.5"/>
+
+    <button class="big-btn" id="fScan" type="submit">🔍 Scan Leaf</button>
+  </form>
+
+  <div id="fBusy" style="display:none;text-align:center;padding:26px">
+    <div style="font-size:2.4rem">🌀</div>
+    <p style="color:#2d6a4f;font-weight:700">Analysing the leaf…</p>
+  </div>
+
+  <div id="fErr" style="display:none;margin-top:14px;background:#ffe9ea;color:#b3202c;padding:14px;border-radius:12px"></div>
+
+  <div id="fResult" style="display:none;margin-top:16px"></div>
+</div>
+
+<script>
+const fImg=document.getElementById('fImg');
+fImg.addEventListener('change',()=>{const f=fImg.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{const p=document.getElementById('fPreview');
+    p.src=e.target.result;p.style.display='block';document.getElementById('dropText').style.display='none';};
+  r.readAsDataURL(f);});
+
+let _lastId=null,_chart=null;
+document.getElementById('farmerForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const err=document.getElementById('fErr');err.style.display='none';
+  if(!fImg.files[0]){err.textContent='Please choose a leaf photo first.';err.style.display='block';return;}
+  document.getElementById('fBusy').style.display='block';
+  document.getElementById('fResult').style.display='none';
+  document.getElementById('fScan').disabled=true;
+  try{
+    const fd=new FormData(e.target);
+    const res=await fetch('/api/full-advisory',{method:'POST',body:fd,credentials:'include'});
+    const j=await res.json();
+    if(!j.success) throw new Error(j.error||'Could not analyse the leaf.');
+    _lastId=j.data.advisory_id;
+    showResult(j.data);
+  }catch(ex){err.textContent=ex.message;err.style.display='block';}
+  finally{document.getElementById('fBusy').style.display='none';document.getElementById('fScan').disabled=false;}
+});
+
+function showResult(data){
+  const d=(data.sections||{}).disease_detection||{};
+  const healthy=d.status==='healthy';
+  const conf=d.confidence_pct??parseFloat(String(d.confidence||'0'));
+  const tx=(d.treatment||[]).map(t=>`<li>${t}</li>`).join('');
+  const el=document.getElementById('fResult');
+  el.style.display='block';
+  el.innerHTML=`
+    <div class="farmer-card">
+      <div class="verdict" style="background:${healthy?'#2d6a4f':'#e63946'}">
+        <div style="font-size:2rem">${healthy?'✅':'⚠️'}</div>
+        <h2>${d.disease||'Unknown'}</h2>
+        <div class="conf-ring">${Math.round(conf)}%</div>
+        <div style="opacity:.9;font-size:.85rem">confidence &nbsp;•&nbsp; severity: ${d.severity||'-'}</div>
+      </div>
+      <p style="color:#444;font-size:.92rem"><strong>Cause:</strong> ${d.cause||'—'}</p>
+      ${tx?`<p style="color:#2d6a4f;font-weight:700;margin-bottom:4px">What to do now</p><ul class="tx-list">${tx}</ul>`:''}
+      ${d.prevention?`<p style="color:#444;font-size:.9rem"><strong>Prevention:</strong> ${d.prevention}</p>`:''}
+    </div>
+    <div class="farmer-card"><h4 style="margin:0 0 8px;color:#2d6a4f">Other possibilities</h4>
+      <div style="height:200px"><canvas id="fChart"></canvas></div></div>
+    <button class="big-btn alt" onclick="downloadFarmerPdf()">📄 Download report (PDF)</button>`;
+  const t3=d.top3||[];
+  if(window.Chart&&t3.length){
+    if(_chart)_chart.destroy();
+    _chart=new Chart(document.getElementById('fChart'),{type:'bar',
+      data:{labels:t3.map(t=>t.disease),datasets:[{data:t3.map(t=>t.confidence),
+        backgroundColor:['#e63946','#e9c46a','#1b4965'],borderRadius:8}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,max:100}}}});
+  }
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+async function downloadFarmerPdf(){
+  const url=_lastId?`/api/download-pdf/${_lastId}`:'/api/download-latest-pdf';
+  const res=await fetch(url,{credentials:'include'});
+  if(!res.ok){alert('Could not build the PDF. Please scan again.');return;}
+  const blob=await res.blob(),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='crop_advisory_report.pdf';a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
+{% endblock %}

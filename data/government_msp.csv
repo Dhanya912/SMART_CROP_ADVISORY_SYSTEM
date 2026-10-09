@@ -1,0 +1,27 @@
+crop,season,year,msp_per_quintal_inr,prev_year_msp,increase_pct,source
+Rice (Common),Kharif,2024-25,2300,2183,5.4,cacp.dacfw.gov.in
+Rice (Grade A),Kharif,2024-25,2320,2203,5.3,cacp.dacfw.gov.in
+Wheat,Rabi,2024-25,2275,2150,5.8,cacp.dacfw.gov.in
+Maize,Kharif,2024-25,2090,1962,6.5,cacp.dacfw.gov.in
+Bajra (Pearl Millet),Kharif,2024-25,2625,2500,5.0,cacp.dacfw.gov.in
+Jowar (Hybrid),Kharif,2024-25,3371,3180,6.0,cacp.dacfw.gov.in
+Jowar (Maldandi),Kharif,2024-25,3421,3225,6.1,cacp.dacfw.gov.in
+Sorghum,Kharif,2024-25,3371,3180,6.0,cacp.dacfw.gov.in
+Ragi,Kharif,2024-25,4290,3846,11.5,cacp.dacfw.gov.in
+Groundnut,Kharif,2024-25,6783,6377,6.4,cacp.dacfw.gov.in
+Soybean,Kharif,2024-25,4892,4600,6.3,cacp.dacfw.gov.in
+Sunflower,Kharif,2024-25,7280,6760,7.7,cacp.dacfw.gov.in
+Cotton (Medium),Kharif,2024-25,7121,6620,7.6,cacp.dacfw.gov.in
+Cotton (Long),Kharif,2024-25,7521,7020,7.1,cacp.dacfw.gov.in
+Sugarcane,Annual,2024-25,340,315,7.9,cacp.dacfw.gov.in
+Moong (Mungbean),Kharif,2024-25,8682,8558,1.4,cacp.dacfw.gov.in
+Urad (Blackgram),Kharif,2024-25,7400,6950,6.5,cacp.dacfw.gov.in
+Arhar (Pigeonpea),Kharif,2024-25,7550,7000,7.9,cacp.dacfw.gov.in
+Chickpea (Gram),Rabi,2024-25,5440,5440,0.0,cacp.dacfw.gov.in
+Lentil (Masur),Rabi,2024-25,6425,6000,7.1,cacp.dacfw.gov.in
+Rapeseed/Mustard,Rabi,2024-25,5650,5450,3.7,cacp.dacfw.gov.in
+Toria,Rabi,2024-25,5650,5450,3.7,cacp.dacfw.gov.in
+Safflower,Rabi,2024-25,5800,5441,6.6,cacp.dacfw.gov.in
+Jute,Kharif,2024-25,5335,4500,18.6,cacp.dacfw.gov.in
+Copra (Milling),Annual,2024-25,10860,10860,0.0,cacp.dacfw.gov.in
+Copra (Ball),Annual,2024-25,11750,11750,0.0,cacp.dacfw.gov.in

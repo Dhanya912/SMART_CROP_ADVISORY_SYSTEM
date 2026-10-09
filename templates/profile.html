@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block body_class %}app-page{% endblock %}
+{% block content %}
+{% include "partials/navbar.html" %}
+<main class="app-main">
+  <div class="page-header"><h1>👤 My Profile</h1><p>Manage your farm details and account settings</p></div>
+  <div class="profile-wrap">
+    <div class="profile-card">
+      <div class="profile-avatar">{{ user.name[0].upper() }}</div>
+      <h2 class="profile-name">{{ user.name }}</h2>
+      <p class="profile-email">{{ user.email }}</p>
+      <p class="profile-meta">📅 Member since {{ user.created_at[:10] if user.created_at else '—' }}</p>
+      <p class="profile-meta" style="margin-top:6px">🕐 Last login: {{ user.last_login[:16] if user.last_login else 'First time' }}</p>
+    </div>
+    <div class="profile-form-card">
+      <h3>Edit Farm Details</h3>
+      <div id="prof-error" class="auth-error" style="display:none"></div>
+      <div id="prof-success" class="auth-success" style="display:none"></div>
+      <form id="profileForm" class="auth-form">
+        <div class="auth-row">
+          <div class="auth-field"><label>Full Name</label><input type="text" id="p-name" value="{{ user.name }}"/></div>
+          <div class="auth-field"><label>Phone</label><input type="tel" id="p-phone" value="{{ user.phone or '' }}"/></div>
+        </div>
+        <div class="auth-row">
+          <div class="auth-field"><label>State</label>
+            <select id="p-state">{% for st in ['Karnataka','Tamil Nadu','Maharashtra','Andhra Pradesh','Telangana','Kerala','Punjab','Haryana','Uttar Pradesh','Madhya Pradesh','Rajasthan','Gujarat','West Bengal','Odisha'] %}<option value="{{ st }}" {% if user.state==st %}selected{% endif %}>{{ st }}</option>{% endfor %}</select></div>
+          <div class="auth-field"><label>District / City</label><input type="text" id="p-district" value="{{ user.district or '' }}"/></div>
+        </div>
+        <div class="auth-row">
+          <div class="auth-field"><label>Land Area (Hectares)</label><input type="number" id="p-land" value="{{ user.land_area or 1 }}" step="0.5" min="0.1"/></div>
+          <div class="auth-field"><label>Soil Type</label>
+            <select id="p-soil">{% for st in ['loamy','clayey','sandy','black','red','silty','laterite'] %}<option value="{{ st }}" {% if user.soil_type==st %}selected{% endif %}>{{ st.capitalize() }}</option>{% endfor %}</select></div>
+        </div>
+        <button type="submit" class="auth-btn">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</main>
+<script>
+document.getElementById('profileForm').addEventListener('submit',async e=>{
+  e.preventDefault();const errEl=document.getElementById('prof-error'),okEl=document.getElementById('prof-success');errEl.style.display=okEl.style.display='none';
+  const res=await fetch('/api/auth/profile',{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({name:document.getElementById('p-name').value,phone:document.getElementById('p-phone').value,state:document.getElementById('p-state').value,district:document.getElementById('p-district').value,land_area:parseFloat(document.getElementById('p-land').value),soil_type:document.getElementById('p-soil').value})});
+  const j=await res.json();if(j.success){okEl.textContent='✅ Profile updated successfully!';okEl.style.display='block';}else{errEl.textContent=j.error;errEl.style.display='block';}});
+</script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Sign In' if mode=='login' else 'Create Account' }}{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block content %}
+<div class="auth-split">
+  <div class="auth-left">
+    <a href="/" class="auth-brand">🌾 CropAI</a>
+    <h2 class="auth-tagline">Smarter farming<br/>starts here.</h2>
+    <ul class="auth-bullets">
+      <li>✅ AI-powered crop recommendations</li>
+      <li>✅ Leaf disease detection in seconds</li>
+      <li>✅ Real-time weather & market data</li>
+      <li>✅ Complete advisory history saved</li>
+      <li>✅ Download PDF report anytime</li>
+      <li>✅ Government schemes in one place</li>
+    </ul>
+  </div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <a href="/login" class="auth-tab {% if mode=='login' %}active{% endif %}">Sign In</a>
+        <a href="/register" class="auth-tab {% if mode=='register' %}active{% endif %}">Register</a>
+      </div>
+      <div id="auth-error" class="auth-error" style="display:none"></div>
+      {% if mode=='login' %}
+      <form id="loginForm" class="auth-form">
+        <div class="auth-field"><label>Email Address</label><input type="email" id="email" placeholder="you@example.com" required/></div>
+        <div class="auth-field"><label>Password</label><input type="password" id="password" placeholder="Your password" required/></div>
+        <button type="submit" class="auth-btn" id="authBtn">Sign In</button>
+        <p class="auth-switch">Don't have an account? <a href="/register">Create one →</a></p>
+      </form>
+      {% else %}
+      <form id="registerForm" class="auth-form">
+        <div class="auth-row">
+          <div class="auth-field"><label>Full Name *</label><input type="text" id="name" placeholder="Your full name" required/></div>
+          <div class="auth-field"><label>Email Address *</label><input type="email" id="email" placeholder="you@example.com" required/></div>
+        </div>
+        <div class="auth-row">
+          <div class="auth-field"><label>Password * (min 6 chars)</label><input type="password" id="password" placeholder="Choose a password" required/></div>
+          <div class="auth-field"><label>Phone Number</label><input type="tel" id="phone" placeholder="9876543210"/></div>
+        </div>
+        <div class="auth-row">
+          <div class="auth-field"><label>State</label>
+            <select id="state"><option value="">Select state</option>
+              <option>Karnataka</option><option>Tamil Nadu</option><option>Maharashtra</option>
+              <option>Andhra Pradesh</option><option>Telangana</option><option>Kerala</option>
+              <option>Punjab</option><option>Haryana</option><option>Uttar Pradesh</option>
+              <option>Madhya Pradesh</option><option>Rajasthan</option><option>Gujarat</option>
+              <option>West Bengal</option><option>Odisha</option></select></div>
+          <div class="auth-field"><label>District / City</label><input type="text" id="district" placeholder="Mysuru"/></div>
+        </div>
+        <div class="auth-row">
+          <div class="auth-field"><label>Land Area</label>
+            <div style="display:flex;gap:8px">
+              <input type="number" id="land_area" placeholder="2.5" step="0.01" min="0.01" value="2" style="flex:2" oninput="landPreview()"/>
+              <select id="land_unit" style="flex:1.2" onchange="landPreview()">
+                <option value="acre">Acre</option>
+                <option value="hectare" selected>Hectare</option>
+                <option value="guntha">Guntha</option>
+                <option value="cent">Cent</option>
+                <option value="bigha">Bigha</option>
+                <option value="sqft">Sq ft</option>
+              </select>
+            </div>
+            <small id="landHint" style="color:#2d6a4f;font-weight:600">= 2.00 hectares</small>
+          </div>
+          <div class="auth-field"><label>Soil Type</label>
+            <select id="soil_type"><option value="loamy">Loamy</option><option value="clayey">Clayey</option>
+              <option value="sandy">Sandy</option><option value="black">Black (Cotton Soil)</option>
+              <option value="red">Red Laterite</option><option value="silty">Silty</option></select></div>
+        </div>
+        <button type="submit" class="auth-btn" id="authBtn">Create Account →</button>
+        <p class="auth-switch">Already have an account? <a href="/login">Sign in →</a></p>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+const mode="{{mode}}",form=document.getElementById(mode==='login'?'loginForm':'registerForm'),errEl=document.getElementById('auth-error'),btn=document.getElementById('authBtn');
+form?.addEventListener('submit',async e=>{
+  e.preventDefault();errEl.style.display='none';btn.disabled=true;
+  btn.textContent=mode==='login'?'Signing in…':'Creating account…';
+  const body=mode==='login'?{email:document.getElementById('email').value,password:document.getElementById('password').value}:{name:document.getElementById('name').value,email:document.getElementById('email').value,password:document.getElementById('password').value,phone:document.getElementById('phone')?.value,state:document.getElementById('state')?.value,district:document.getElementById('district')?.value,land_area:parseFloat(document.getElementById('land_area')?.value||1),land_unit:document.getElementById('land_unit')?.value||'hectare',soil_type:document.getElementById('soil_type')?.value};
+  try{const res=await fetch(mode==='login'?'/api/auth/login':'/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),credentials:'include'});
+  const json=await res.json();
+  if(json.success){window.location.href=json.redirect||'/dashboard';}
+  else{errEl.textContent=json.error||'Something went wrong.';errEl.style.display='block';btn.disabled=false;btn.textContent=mode==='login'?'Sign In':'Create Account →';}}
+  catch(err){errEl.textContent='Network error. Please try again.';errEl.style.display='block';btn.disabled=false;btn.textContent=mode==='login'?'Sign In':'Create Account →';}
+});
+</script>
+
+<script>
+const U2HA={hectare:1,acre:0.404686,guntha:0.010117,cent:0.0040469,bigha:0.2529,sqft:0.0000092903};
+function landPreview(){const el=document.getElementById('land_area');const h=document.getElementById('landHint');
+  if(!el||!h)return;const v=parseFloat(el.value||0);const u=document.getElementById('land_unit').value||'hectare';
+  if(!v||v<=0){h.textContent='Enter a land area greater than 0';h.style.color='#e63946';return;}
+  const ha=v*U2HA[u];h.style.color='#2d6a4f';
+  h.textContent='= '+ha.toFixed(ha<0.1?4:2)+' hectares  ('+(ha/0.404686).toFixed(2)+' acres)';}
+document.addEventListener('DOMContentLoaded',landPreview);
+</script>
+
+{% endblock %}

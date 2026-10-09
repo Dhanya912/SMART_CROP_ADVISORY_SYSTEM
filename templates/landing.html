@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block body_class %}landing-page{% endblock %}
+{% block content %}
+<nav class="l-nav">
+  <div class="l-brand">🌾 CropAI</div>
+  <div class="l-nav-right">
+    <a href="/login" class="btn-nav">Sign In</a>
+    <a href="/register" class="btn-nav btn-nav-primary">Get Started Free</a>
+  </div>
+</nav>
+<section class="hero-section">
+  <div class="hero-inner">
+    <div class="hero-badge">🤖 Multi-Agent Agentic AI for Sustainable Agriculture</div>
+    <h1 class="hero-h1">Smart Crop Advisory<br/><span class="text-gold">for Every Farmer</span></h1>
+    <p class="hero-para">7 specialised AI agents deliver real-time crop selection, disease detection, soil analysis, weather advisories, market prices, and government schemes — all in one place.</p>
+    <div class="hero-cta">
+      <a href="/register" class="btn-cta">Get Free Advisory →</a>
+      <a href="/login" class="btn-cta-outline">Already a member</a>
+    </div>
+  </div>
+  <div class="feat-strip">
+    <div class="feat-item"><span>🌱</span>Crop Recommendation</div>
+    <div class="feat-item"><span>🔬</span>Disease Detection</div>
+    <div class="feat-item"><span>⛅</span>Weather Analysis</div>
+    <div class="feat-item"><span>🪨</span>Soil Health</div>
+    <div class="feat-item"><span>📈</span>Market Prices</div>
+    <div class="feat-item"><span>📜</span>Govt Schemes</div>
+    <div class="feat-item"><span>📄</span>PDF Download</div>
+    <div class="feat-item"><span>📋</span>Advisory History</div>
+  </div>
+</section>
+<section class="stats-section">
+  <div class="stat-box"><span class="stat-num">22+</span><span class="stat-lbl">Crops Supported</span></div>
+  <div class="stat-box"><span class="stat-num">38</span><span class="stat-lbl">Diseases Detected</span></div>
+  <div class="stat-box"><span class="stat-num">7</span><span class="stat-lbl">AI Agents</span></div>
+  <div class="stat-box"><span class="stat-num">100%</span><span class="stat-lbl">Free to Use</span></div>
+</section>
+<footer class="l-footer">
+  <p>🌾 CropAI &nbsp;|&nbsp; Yenepoya Institute of Technology, Moodbidri &nbsp;|&nbsp; Dept. of Computer Science & Engineering</p>
+  <p style="margin-top:4px;opacity:.5;font-size:.8rem">Dhanyashree | Mahe Riza | Khushi C S | Archana M Naik &nbsp;|&nbsp; Guide: Dr. Sangamesh C J</p>
+</footer>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}app-page{% endblock %}
+{% block content %}
+{% include "partials/navbar.html" %}
+<main class="app-main">
+  <div class="page-header">
+    <h1>Welcome back, {{ user.name.split()[0] }} 👋</h1>
+    <p>Your farm overview and AI agent tools</p>
+  </div>
+  <div class="stats-bar">
+    <div class="sbar-item"><span class="sbar-num" id="totalAdv">—</span><span class="sbar-lbl">Total Advisories</span></div>
+    <div class="sbar-item"><span class="sbar-num" id="avgSoil">—</span><span class="sbar-lbl">Avg Soil Score</span></div>
+    <div class="sbar-item"><span class="sbar-num" id="avgInc">—</span><span class="sbar-lbl">Avg Net Income</span></div>
+    <div class="sbar-item"><span class="sbar-num" id="topCrop">—</span><span class="sbar-lbl">Top Recommended</span></div>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px">
+    <a href="/advisory" class="btn-cta" style="font-size:.9rem;padding:11px 28px">+ New Advisory</a>
+    <a href="/history"  class="btn-cta-outline" style="font-size:.9rem;padding:11px 28px;border-color:var(--leaf);color:var(--leaf)">📋 View All History</a>
+  </div>
+  <div class="dash-grid">
+    <div class="dash-card"><div class="card-header" style="background:var(--leaf)"><span>🌱</span><h3>Crop Recommendation</h3></div><div class="card-body"><div class="mini-form"><div class="mini-row"><input type="number" id="cr-n" placeholder="N (kg/ha)" value="80"/><input type="number" id="cr-p" placeholder="P (kg/ha)" value="40"/><input type="number" id="cr-k" placeholder="K (kg/ha)" value="60"/></div><div class="mini-row"><input type="number" id="cr-ph" placeholder="pH" value="6.5" step="0.1"/><input type="number" id="cr-temp" placeholder="Temp°C" value="26"/><input type="number" id="cr-rain" placeholder="Rain mm" value="150"/></div><button class="btn-small" onclick="runCropAgent()">▶ Run Agent</button></div><div class="agent-result" id="crop-result"></div></div></div>
+    <div class="dash-card"><div class="card-header" style="background:var(--sky)"><span>⛅</span><h3>Weather Analysis</h3></div><div class="card-body"><div class="mini-form"><input type="text" id="wx-loc" placeholder="Location" value="{{ user.district or 'Mysuru' }}, {{ user.state or 'Karnataka' }}"/><button class="btn-small" onclick="runWeatherAgent()">▶ Get Weather</button></div><div class="agent-result" id="weather-result"></div></div></div>
+    <div class="dash-card"><div class="card-header" style="background:var(--bark)"><span>🪨</span><h3>Soil Health</h3></div><div class="card-body"><div class="mini-form"><div class="mini-row"><input type="number" id="sh-n" placeholder="N" value="80"/><input type="number" id="sh-p" placeholder="P" value="40"/></div><div class="mini-row"><input type="number" id="sh-k" placeholder="K" value="60"/><input type="number" id="sh-ph" placeholder="pH" value="6.5" step="0.1"/></div><input type="text" id="sh-crop" placeholder="Crop (e.g. rice)" value="rice"/><button class="btn-small" onclick="runSoilAgent()">▶ Assess Soil</button></div><div class="agent-result" id="soil-result"></div></div></div>
+    <div class="dash-card"><div class="card-header" style="background:#b8860b"><span>📈</span><h3>Market Intelligence</h3></div><div class="card-body"><div class="mini-form"><input type="text" id="mk-crop" placeholder="Crop name" value="rice"/><input type="text" id="mk-loc" placeholder="State" value="{{ user.state or 'Karnataka' }}"/><button class="btn-small" onclick="runMarketAgent()">▶ Get Prices</button></div><div class="agent-result" id="market-result"></div></div></div>
+    <div class="dash-card"><div class="card-header" style="background:#2d6a4f"><span>📜</span><h3>Policy & Schemes</h3></div><div class="card-body"><div class="mini-form"><input type="text" id="po-crop" placeholder="Crop" value="rice"/><input type="text" id="po-state" placeholder="State" value="{{ user.state or 'Karnataka' }}"/><button class="btn-small" onclick="runPolicyAgent()">▶ Get Schemes</button></div><div class="agent-result" id="policy-result"></div></div></div>
+    <div class="dash-card"><div class="card-header" style="background:#e63946"><span>🔬</span><h3>Disease Detection</h3></div><div class="card-body"><div class="mini-form"><div class="upload-area" style="padding:14px" onclick="document.getElementById('dd-image').click()"><input type="file" id="dd-image" accept="image/*" style="display:none"/><img id="dd-preview" src="" alt="" style="display:none;max-height:90px;border-radius:8px;margin:0 auto"/><p id="dd-ph" style="color:#888;font-size:.85rem;text-align:center">📷 Click to upload leaf image</p></div><select id="dd-crop"><option value="tomato">Tomato</option><option value="maize">Maize</option><option value="potato">Potato</option><option value="apple">Apple</option><option value="grape">Grape</option></select><button class="btn-small" onclick="runDiseaseAgent()">▶ Detect Disease</button></div><div class="agent-result" id="disease-result"></div></div></div>
+  </div>
+  <div style="margin-top:32px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <h3 style="font-family:'Playfair Display',serif;color:var(--leaf)">Recent Advisories</h3>
+      <a href="/history" style="color:var(--leaf);font-size:.88rem;font-weight:700;text-decoration:none">View all →</a>
+    </div>
+    <div id="recentHistory"><p style="color:#888;font-size:.9rem">Loading…</p></div>
+  </div>
+</main>
+<script src="/static/js/dashboard.js"></script>
+<script>
+async function loadDashboard(){
+  const sr=await fetch('/api/stats',{credentials:'include'});const sj=await sr.json();
+  if(sj.success){const s=sj.stats;document.getElementById('totalAdv').textContent=s.total_advisories;document.getElementById('avgSoil').textContent=(s.avg_soil_score||0)+'/100';document.getElementById('avgInc').textContent=s.avg_net_income?'₹'+Math.round(s.avg_net_income).toLocaleString():'—';document.getElementById('topCrop').textContent=s.top_crops[0]?.top_crop||'—';}
+  const hr=await fetch('/api/history?limit=5',{credentials:'include'});const hj=await hr.json();
+  const el=document.getElementById('recentHistory');
+  if(!hj.success||!hj.history.length){el.innerHTML='<p style="color:#888;font-size:.9rem">No advisories yet. <a href="/advisory" style="color:var(--leaf);font-weight:700">Get your first one →</a></p>';return;}
+  el.innerHTML=`<div style="background:#fff;border-radius:12px;box-shadow:var(--shadow);overflow:hidden"><table class="hist-table"><thead><tr><th>Date</th><th>Location</th><th>Top Crop</th><th>Soil Score</th><th>Net Income</th><th>PDF</th></tr></thead><tbody>${hj.history.map(r=>`<tr class="hist-row" onclick="window.location='/history'"><td>${fmtDate(r.created_at)}</td><td>${r.location||'—'}</td><td><span class="crop-pill">${cap(r.top_crop)||'—'}</span></td><td>${r.soil_score||'—'}/100</td><td>${r.net_income?'₹'+Math.round(r.net_income).toLocaleString():'—'}</td><td><button class="view-btn" onclick="event.stopPropagation();dlPDF(${r.id})">⬇ PDF</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+document.getElementById('dd-image')?.addEventListener('change',function(){const prev=document.getElementById('dd-preview'),ph=document.getElementById('dd-ph');if(this.files[0]){prev.src=URL.createObjectURL(this.files[0]);prev.style.display='block';ph.style.display='none';}});
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+function fmtDate(dt){return dt?new Date(dt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'—';}
+async function dlPDF(id){const res=await fetch('/api/download-pdf/'+id,{credentials:'include'});if(!res.ok){alert('PDF error');return;}const blob=await res.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='CropAI_Advisory_'+id+'.pdf';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+loadDashboard();
+</script>
+{% endblock %}

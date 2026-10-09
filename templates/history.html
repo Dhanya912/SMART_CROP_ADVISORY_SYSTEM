@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}My Advisory History{% endblock %}
+{% block body_class %}app-page{% endblock %}
+{% block content %}
+{% include "partials/navbar.html" %}
+<main class="app-main">
+  <div class="page-header"><h1>📋 My Advisory History</h1><p>All your past advisories, inputs and AI predictions saved here</p></div>
+  <div class="stats-bar" id="statsBar">
+    <div class="sbar-item"><span class="sbar-num" id="totalAdv">—</span><span class="sbar-lbl">Total Advisories</span></div>
+    <div class="sbar-item"><span class="sbar-num" id="avgSoil">—</span><span class="sbar-lbl">Avg Soil Score</span></div>
+    <div class="sbar-item"><span class="sbar-num" id="avgIncome">—</span><span class="sbar-lbl">Avg Net Income</span></div>
+    <div class="sbar-item"><span class="sbar-num" id="topCropStat">—</span><span class="sbar-lbl">Most Recommended</span></div>
+  </div>
+  <div class="history-wrap">
+    <div class="history-toolbar">
+      <input type="text" id="histSearch" placeholder="🔍 Search by crop, location, disease…" class="hist-search"/>
+      <a href="/advisory" class="btn-small-green">+ New Advisory</a>
+    </div>
+    <div id="histLoading" style="text-align:center;padding:40px;color:#888">Loading your history…</div>
+    <div id="histEmpty" style="display:none;text-align:center;padding:40px;color:#888">No advisories yet. <a href="/advisory" style="color:var(--leaf);font-weight:700">Get your first advisory →</a></div>
+    <div id="histTableWrap" style="display:none;overflow-x:auto">
+      <table class="hist-table">
+        <thead><tr><th>#</th><th>Date</th><th>Location</th><th>Top Crop</th><th>Confidence</th><th>Disease</th><th>Soil Score</th><th>Net Income</th><th>PDF</th><th>Details</th></tr></thead>
+        <tbody id="histBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-overlay" id="detailModal" style="display:none">
+    <div class="modal-box">
+      <button class="modal-close" onclick="document.getElementById('detailModal').style.display='none'">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+</main>
+<script>
+let allHistory=[];
+async function loadStats(){const r=await fetch('/api/stats',{credentials:'include'});const j=await r.json();if(!j.success)return;const s=j.stats;document.getElementById('totalAdv').textContent=s.total_advisories;document.getElementById('avgSoil').textContent=(s.avg_soil_score||0)+'/100';document.getElementById('avgIncome').textContent=s.avg_net_income?'₹'+Math.round(s.avg_net_income).toLocaleString():'—';document.getElementById('topCropStat').textContent=s.top_crops[0]?.top_crop||'—';}
+async function loadHistory(){const r=await fetch('/api/history?limit=50',{credentials:'include'});const j=await r.json();document.getElementById('histLoading').style.display='none';if(!j.success||!j.history.length){document.getElementById('histEmpty').style.display='block';return;}allHistory=j.history;document.getElementById('histTableWrap').style.display='block';renderTable(allHistory);}
+function renderTable(rows){const tbody=document.getElementById('histBody');tbody.innerHTML=rows.map((r,i)=>`<tr class="hist-row"><td class="td-num">${i+1}</td><td class="td-date">${fmtDate(r.created_at)}</td><td>${r.location||'—'}</td><td><span class="crop-pill">${cap(r.top_crop)||'—'}</span></td><td>${r.crop_confidence?Math.round(r.crop_confidence*100>1?r.crop_confidence:r.crop_confidence*100)+'%':'—'}</td><td class="${r.disease_severity&&r.disease_severity!='None'?'text-alert':'text-ok'}">${r.disease_name||'No disease'}</td><td><span class="score-pill" style="background:${scoreCol(r.soil_score)}">${r.soil_score||'—'}</span></td><td>${r.net_income?'₹'+Math.round(r.net_income).toLocaleString():'—'}</td><td><button class="view-btn" onclick="dlPDF(${r.id})">⬇ PDF</button></td><td><button class="view-btn" onclick="viewDetail(${r.id})">View</button></td></tr>`).join('');}
+async function viewDetail(id){const r=await fetch('/api/history/'+id,{credentials:'include'});const j=await r.json();if(!j.success)return;const d=j.data,report=d.report||{},secs=report.sections||{},crop=secs.crop_recommendation||{},dis=secs.disease_detection||{},soil=secs.soil_health||{},mkt=secs.market_intelligence||{};
+document.getElementById('modalContent').innerHTML=`<h2 style="color:var(--leaf);font-family:'Playfair Display',serif;margin-bottom:8px">Advisory #${id}</h2><p style="color:#888;font-size:.85rem;margin-bottom:16px">📍 ${d.location} | 📅 ${fmtDate(d.created_at)} | ⏱ ${d.processing_time}s</p><div class="modal-summary">${report.executive_summary||''}</div><div class="modal-grid"><div class="modal-section"><h4>🌾 Inputs</h4>${mrow('Nitrogen',d.nitrogen+' kg/ha')}${mrow('Phosphorus',d.phosphorus+' kg/ha')}${mrow('Potassium',d.potassium+' kg/ha')}${mrow('pH',d.ph)}${mrow('Temperature',d.temperature+'°C')}${mrow('Humidity',d.humidity+'%')}${mrow('Rainfall',d.rainfall+' mm')}${mrow('Soil Type',d.soil_type)}${mrow('Land Area',d.land_area+' ha')}</div><div class="modal-section"><h4>🌱 Crop Prediction</h4><p style="font-size:1.4rem;font-weight:900;color:var(--leaf);font-family:'Playfair Display',serif">${crop.top_crop||'—'}</p>${(crop.all_crops||[]).map(c=>`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.85rem"><span>${cap(c.crop)}</span><span style="font-weight:700">${Math.round(c.confidence<=1?c.confidence*100:c.confidence)}%</span></div>`).join('')}</div><div class="modal-section"><h4>🔬 Disease</h4><p style="font-weight:700;color:${dis.status==='healthy'?'var(--leaf)':'var(--alert)'};font-size:1.05rem">${dis.disease||'No image'}</p>${mrow('Severity',dis.severity||'—')}${mrow('Confidence',dis.confidence||'—')}</div><div class="modal-section"><h4>🪨 Soil Health</h4>${mrow('Score',(soil.health_score||0)+'/100 — '+(soil.overall_health||''))}${mrow('N status',soil.nitrogen_status||'—')}${mrow('P status',soil.phosphorus_status||'—')}${mrow('K status',soil.potassium_status||'—')}${mrow('pH',soil.ph||'—')}</div><div class="modal-section"><h4>📈 Market</h4>${mrow('Avg Price',mkt.avg_price||'—')}${mrow('Trend',mkt.price_trend||'—')}${mrow('Net Income',mkt.net_income||'—')}</div></div>${(report.action_plan||[]).length?`<h4 style="margin-top:20px">📋 Action Plan</h4>${report.action_plan.map(a=>`<div class="action-item"><div class="action-num">${a.priority}</div><div class="action-text"><strong>${a.action}</strong><small>⏰ ${a.timeline}</small></div></div>`).join('')}`:''}<div style="margin-top:20px;text-align:center"><button class="auth-btn" style="max-width:220px" onclick="dlPDF(${id})">⬇ Download PDF Report</button></div>`;
+document.getElementById('detailModal').style.display='flex';}
+async function dlPDF(id){const res=await fetch('/api/download-pdf/'+id,{credentials:'include'});if(!res.ok){alert('PDF generation failed');return;}const blob=await res.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='CropAI_Advisory_'+id+'.pdf';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+document.getElementById('histSearch')?.addEventListener('input',function(){const q=this.value.toLowerCase();renderTable(allHistory.filter(r=>(r.top_crop||'').includes(q)||(r.location||'').toLowerCase().includes(q)||(r.disease_name||'').toLowerCase().includes(q)));});
+function mrow(k,v){return`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f0f0;font-size:.85rem"><span style="color:#666">${k}</span><span style="font-weight:700">${v}</span></div>`;}
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+function fmtDate(dt){return dt?new Date(dt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—';}
+function scoreCol(s){return s>=80?'#d8f3dc':s>=60?'#fff3cd':s>=40?'#ffe0b2':'#fde8e8';}
+loadStats();loadHistory();
+</script>
+{% endblock %}

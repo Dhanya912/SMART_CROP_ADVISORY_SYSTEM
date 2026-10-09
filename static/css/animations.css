@@ -1,0 +1,239 @@
+/* =======================================================================
+   CropAI — Animation Layer
+   Purely additive: no existing rules are overridden or removed.
+   Everything degrades gracefully and respects prefers-reduced-motion.
+   ======================================================================= */
+
+/* ---------------------------------------------------------- KEYFRAMES */
+@keyframes ca-fade-up      {from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ca-fade-down    {from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ca-fade-left    {from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:translateX(0)}}
+@keyframes ca-fade-right   {from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:translateX(0)}}
+@keyframes ca-pop         {0%{opacity:0;transform:scale(.86)}60%{transform:scale(1.035)}100%{opacity:1;transform:scale(1)}}
+@keyframes ca-blur-in      {from{opacity:0;filter:blur(10px);transform:translateY(18px)}to{opacity:1;filter:blur(0);transform:translateY(0)}}
+@keyframes ca-float        {0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+@keyframes ca-sway         {0%{transform:translate(0,-8vh) rotate(0)}100%{transform:translate(var(--ca-drift,60px),112vh) rotate(420deg)}}
+@keyframes ca-shine        {0%{background-position:-260% 0}100%{background-position:260% 0}}
+@keyframes ca-gradient     {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes ca-grow-bar     {from{width:0}}
+@keyframes ca-ripple       {to{transform:scale(3.2);opacity:0}}
+@keyframes ca-glow         {0%,100%{box-shadow:0 0 0 0 rgba(233,196,106,.55)}70%{box-shadow:0 0 0 18px rgba(233,196,106,0)}}
+@keyframes ca-spin-slow    {to{transform:rotate(360deg)}}
+@keyframes ca-shimmer-line {0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes ca-page-in      {from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ca-wiggle       {0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
+
+/* ------------------------------------------------- PAGE ENTRANCE */
+body{animation:ca-page-in .5s cubic-bezier(.22,.9,.28,1) both}
+
+/* --------------------------------------- SCROLL REVEAL (JS driven) */
+[data-ca-reveal]{opacity:0;will-change:opacity,transform}
+[data-ca-reveal].ca-in{animation:ca-fade-up .72s cubic-bezier(.22,.9,.28,1) both}
+[data-ca-reveal="left"].ca-in{animation-name:ca-fade-left}
+[data-ca-reveal="right"].ca-in{animation-name:ca-fade-right}
+[data-ca-reveal="down"].ca-in{animation-name:ca-fade-down}
+[data-ca-reveal="pop"].ca-in{animation-name:ca-pop;animation-duration:.6s}
+[data-ca-reveal="blur"].ca-in{animation-name:ca-blur-in;animation-duration:.85s}
+
+/* ------------------------------------------------- LANDING PAGE */
+.landing-page{
+  background:linear-gradient(135deg,#062418 0%,#0a3622 35%,#0d4030 60%,#123f52 100%);
+  background-size:220% 220%;
+  animation:ca-gradient 26s ease-in-out infinite;
+}
+/* soft moving light behind the hero */
+.hero-section::before{
+  content:"";position:absolute;inset:-20% -10% auto -10%;height:150%;
+  background:radial-gradient(circle at 30% 20%,rgba(116,198,157,.22),transparent 55%),
+             radial-gradient(circle at 75% 35%,rgba(233,196,106,.16),transparent 55%);
+  animation:ca-gradient 20s ease-in-out infinite;background-size:180% 180%;
+  pointer-events:none;z-index:0;
+}
+.hero-inner,.feat-strip{position:relative;z-index:1}
+
+.landing-page .l-nav{animation:ca-fade-down .7s ease both}
+.hero-badge{animation:ca-pop .7s .1s cubic-bezier(.22,.9,.28,1) both}
+.hero-h1{animation:ca-blur-in .95s .2s cubic-bezier(.22,.9,.28,1) both}
+.hero-para{animation:ca-fade-up .9s .38s cubic-bezier(.22,.9,.28,1) both}
+.hero-cta{animation:ca-fade-up .9s .54s cubic-bezier(.22,.9,.28,1) both}
+.text-gold{background:linear-gradient(100deg,#e9c46a,#fff3c4,#f4a261,#e9c46a);
+  background-size:260% 100%;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;animation:ca-shine 5.5s linear infinite}
+
+.btn-cta{position:relative;overflow:hidden;animation:ca-glow 3.2s 1.4s ease-out infinite}
+.btn-cta:hover{transform:translateY(-3px) scale(1.035);box-shadow:0 12px 30px rgba(233,196,106,.34)}
+.btn-cta,.btn-cta-outline,.btn-nav,.btn-small,.auth-btn,.view-btn,.btn-small-green{
+  transition:transform .22s cubic-bezier(.22,.9,.28,1),box-shadow .22s ease,background .22s ease}
+.btn-cta-outline:hover,.btn-nav:hover{transform:translateY(-3px)}
+.btn-small:hover,.auth-btn:hover,.view-btn:hover,.btn-small-green:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(45,106,79,.28)}
+
+/* feature strip: staggered entrance + playful icon hover */
+.feat-item{transition:transform .25s ease,opacity .25s ease;animation:ca-fade-up .6s both}
+.feat-item:hover{transform:translateY(-4px);opacity:1}
+.feat-item:hover span{display:inline-block;animation:ca-wiggle .5s ease}
+.feat-strip .feat-item:nth-child(1){animation-delay:.62s}
+.feat-strip .feat-item:nth-child(2){animation-delay:.68s}
+.feat-strip .feat-item:nth-child(3){animation-delay:.74s}
+.feat-strip .feat-item:nth-child(4){animation-delay:.80s}
+.feat-strip .feat-item:nth-child(5){animation-delay:.86s}
+.feat-strip .feat-item:nth-child(6){animation-delay:.92s}
+.feat-strip .feat-item:nth-child(7){animation-delay:.98s}
+.feat-strip .feat-item:nth-child(8){animation-delay:1.04s}
+
+.stat-box{transition:transform .28s cubic-bezier(.22,.9,.28,1),background .28s ease}
+.stat-box:hover{transform:translateY(-6px);background:rgba(255,255,255,.06)}
+.stat-num,.sbar-num{display:block}
+
+/* floating leaves layer */
+.ca-leaves{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.ca-leaf{position:absolute;top:0;font-size:1.15rem;opacity:.22;animation:ca-sway linear infinite}
+
+/* ------------------------------------------------------- AUTH */
+.auth-left{position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#0a3622 0%,#12564a 50%,#1b4965 100%);
+  background-size:180% 180%;animation:ca-gradient 22s ease-in-out infinite}
+.auth-tagline{animation:ca-fade-up .8s .1s cubic-bezier(.22,.9,.28,1) both}
+.auth-bullets li{animation:ca-fade-left .6s both}
+.auth-bullets li:nth-child(1){animation-delay:.3s}
+.auth-bullets li:nth-child(2){animation-delay:.4s}
+.auth-bullets li:nth-child(3){animation-delay:.5s}
+.auth-bullets li:nth-child(4){animation-delay:.6s}
+.auth-bullets li:nth-child(5){animation-delay:.7s}
+.auth-card{animation:ca-pop .7s .12s cubic-bezier(.22,.9,.28,1) both}
+.auth-field input,.auth-field select,.field input,.field select,.mini-form input,.mini-form select{
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.auth-field input:focus,.auth-field select:focus,.field input:focus,.field select:focus,
+.mini-form input:focus,.mini-form select:focus{box-shadow:0 0 0 4px rgba(64,145,108,.16)}
+.auth-error,.auth-success,.error-box{animation:ca-pop .35s ease both}
+.auth-tab{position:relative}
+.auth-tab::after{content:"";position:absolute;left:0;bottom:-2px;height:2px;width:100%;
+  background:var(--leaf);transform:scaleX(0);transform-origin:right;transition:transform .3s ease}
+.auth-tab:hover::after{transform:scaleX(1);transform-origin:left}
+
+/* -------------------------------------------------- APP SHELL */
+.app-nav{animation:ca-fade-down .5s ease both}
+.nav-link{position:relative}
+.nav-link::after{content:"";position:absolute;left:12px;right:12px;bottom:2px;height:2px;
+  background:var(--leaf);border-radius:2px;transform:scaleX(0);transform-origin:center;
+  transition:transform .28s cubic-bezier(.22,.9,.28,1)}
+.nav-link:hover::after,.nav-link.active::after{transform:scaleX(1)}
+.page-header{animation:ca-fade-up .55s ease both}
+.app-main{position:relative;z-index:1}
+
+.stats-bar{animation:ca-pop .6s .05s cubic-bezier(.22,.9,.28,1) both}
+.sbar-item{transition:transform .25s ease}
+.sbar-item:hover{transform:translateY(-4px)}
+
+/* cards: staggered entrance + lift on hover */
+.dash-card,.report-card,.advisory-form,.history-wrap,.profile-card,.profile-form-card{
+  transition:transform .3s cubic-bezier(.22,.9,.28,1),box-shadow .3s ease}
+.dash-card:hover,.report-card:hover{transform:translateY(-7px);box-shadow:var(--shadow-md)}
+.dash-card .card-header span{transition:transform .3s ease}
+.dash-card:hover .card-header span{transform:scale(1.18) rotate(-8deg)}
+.dash-grid > .dash-card{animation:ca-fade-up .65s both}
+.dash-grid > .dash-card:nth-child(1){animation-delay:.06s}
+.dash-grid > .dash-card:nth-child(2){animation-delay:.14s}
+.dash-grid > .dash-card:nth-child(3){animation-delay:.22s}
+.dash-grid > .dash-card:nth-child(4){animation-delay:.30s}
+.dash-grid > .dash-card:nth-child(5){animation-delay:.38s}
+.dash-grid > .dash-card:nth-child(6){animation-delay:.46s}
+
+.agent-result.visible{animation:ca-fade-up .4s ease both}
+.res-row{animation:ca-fade-left .35s both}
+.upload-area{transition:border-color .25s ease,background .25s ease,transform .25s ease}
+.upload-area:hover{transform:translateY(-2px);background:#f2f8f4}
+.upload-area.ca-dragging{border-color:var(--leaf);background:#eaf6ee;transform:scale(1.01)}
+
+/* advisory form sections stagger */
+.advisory-form{animation:ca-fade-up .6s .05s cubic-bezier(.22,.9,.28,1) both}
+.advisory-form .form-group{animation:ca-fade-up .55s both}
+.advisory-form .form-group:nth-of-type(1){animation-delay:.10s}
+.advisory-form .form-group:nth-of-type(2){animation-delay:.18s}
+.advisory-form .form-group:nth-of-type(3){animation-delay:.26s}
+.advisory-form .form-group:nth-of-type(4){animation-delay:.34s}
+
+/* confidence + score visuals */
+.conf-bar{animation:ca-grow-bar 1.05s cubic-bezier(.22,.9,.28,1) both}
+.score-circle{animation:ca-pop .6s .1s cubic-bezier(.22,.9,.28,1) both}
+.weather-banner,.msp-badge{animation:ca-fade-up .5s .1s ease both}
+.action-item{animation:ca-fade-left .55s both;transition:transform .25s ease,box-shadow .25s ease}
+.action-item:hover{transform:translateX(6px);box-shadow:0 6px 18px rgba(0,0,0,.09)}
+.action-plan .action-item:nth-child(1){animation-delay:.05s}
+.action-plan .action-item:nth-child(2){animation-delay:.12s}
+.action-plan .action-item:nth-child(3){animation-delay:.19s}
+.action-plan .action-item:nth-child(4){animation-delay:.26s}
+.action-plan .action-item:nth-child(5){animation-delay:.33s}
+.action-plan .action-item:nth-child(6){animation-delay:.40s}
+.action-num{transition:transform .25s ease}
+.action-item:hover .action-num{transform:scale(1.15) rotate(-10deg)}
+.tamil-section{animation:ca-pop .55s .15s ease both}
+.key-insight{animation:ca-fade-up .45s ease both}
+
+/* history table rows cascade */
+.hist-row{animation:ca-fade-up .4s both}
+.hist-row:nth-child(1){animation-delay:.03s}
+.hist-row:nth-child(2){animation-delay:.06s}
+.hist-row:nth-child(3){animation-delay:.09s}
+.hist-row:nth-child(4){animation-delay:.12s}
+.hist-row:nth-child(5){animation-delay:.15s}
+.hist-row:nth-child(6){animation-delay:.18s}
+.hist-row:nth-child(7){animation-delay:.21s}
+.hist-row:nth-child(8){animation-delay:.24s}
+.hist-row:hover{transform:translateX(3px)}
+.crop-pill,.score-pill{transition:transform .2s ease}
+.hist-row:hover .crop-pill,.hist-row:hover .score-pill{transform:scale(1.07)}
+
+/* modal */
+.modal-overlay{animation:ca-fade-down .25s ease both;backdrop-filter:blur(3px)}
+.modal-box{animation:ca-pop .38s cubic-bezier(.22,.9,.28,1) both}
+.modal-close{transition:transform .2s ease,background .2s ease}
+.modal-close:hover{transform:rotate(90deg);background:var(--sun)}
+.modal-section{transition:transform .25s ease}
+.modal-section:hover{transform:translateY(-3px)}
+
+/* profile */
+.profile-card{position:relative;overflow:hidden;background-size:180% 180%;
+  animation:ca-fade-left .6s both,ca-gradient 24s ease-in-out infinite}
+.profile-avatar{animation:ca-float 4.6s ease-in-out infinite}
+.profile-form-card{animation:ca-fade-right .6s .08s both}
+
+/* ------------------------------------------------- LOADING STATES */
+.spinner{animation:ca-spin-slow .9s linear infinite}
+.ca-skeleton{position:relative;overflow:hidden;background:#eef2ee;border-radius:8px;min-height:14px}
+.ca-skeleton::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  animation:ca-shimmer-line 1.25s infinite}
+.ca-busy{position:relative;pointer-events:none;opacity:.75}
+.ca-busy::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;overflow:hidden;
+  background:linear-gradient(90deg,transparent,var(--leaf-lt),transparent);
+  animation:ca-shimmer-line 1s linear infinite}
+
+/* button ripple (JS injects .ca-ripple spans) */
+.ca-ripple{position:absolute;border-radius:50%;width:14px;height:14px;margin:-7px 0 0 -7px;
+  background:rgba(255,255,255,.55);pointer-events:none;animation:ca-ripple .6s ease-out forwards}
+
+/* count-up numbers stay stable while animating */
+.stat-num,.sbar-num,.score-num{font-variant-numeric:tabular-nums}
+
+/* scroll progress bar */
+.ca-progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:1000;
+  background:linear-gradient(90deg,var(--sprout),var(--gold));transition:width .12s linear}
+
+/* back-to-top */
+.ca-top{position:fixed;left:26px;bottom:26px;width:44px;height:44px;border:none;border-radius:50%;
+  background:#fff;color:var(--leaf);box-shadow:var(--shadow);cursor:pointer;font-size:1rem;
+  opacity:0;transform:translateY(14px) scale(.85);pointer-events:none;
+  transition:opacity .3s ease,transform .3s cubic-bezier(.22,.9,.28,1);z-index:998}
+.ca-top.ca-show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.ca-top:hover{transform:translateY(-3px) scale(1.08)}
+
+/* ------------------------------------------------- ACCESSIBILITY */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;
+    transition-duration:.001s!important;scroll-behavior:auto!important}
+  [data-ca-reveal]{opacity:1!important}
+  .ca-leaves{display:none}
+}
+
+/* small layout safeguard so 3-up mini inputs never overflow their card */
+.mini-row input,.mini-row select{min-width:0}
